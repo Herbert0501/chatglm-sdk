@@ -15,7 +15,7 @@ public class ImageCompletionResponse {
     private List<Image> data;
 
     @Data
-    public static class Image{
+    public static class Image {
         private String url;
     }
 

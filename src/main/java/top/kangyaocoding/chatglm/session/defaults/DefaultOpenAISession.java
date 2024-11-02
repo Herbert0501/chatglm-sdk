@@ -3,10 +3,10 @@ package top.kangyaocoding.chatglm.session.defaults;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
+import top.kangyaocoding.chatglm.executor.Executor;
 import top.kangyaocoding.chatglm.model.*;
 import top.kangyaocoding.chatglm.session.Configuration;
 import top.kangyaocoding.chatglm.session.OpenAISession;
-import top.kangyaocoding.chatglm.executor.Executor;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,6 +21,7 @@ public class DefaultOpenAISession implements OpenAISession {
         this.configuration = configuration;
         this.executorGroup = executorGroup;
     }
+
     @Override
     public EventSource completions(ChatCompletionRequest chatCompletionRequest, EventSourceListener eventSourceListener) throws Exception {
         Executor executor = executorGroup.get(chatCompletionRequest.getModel());

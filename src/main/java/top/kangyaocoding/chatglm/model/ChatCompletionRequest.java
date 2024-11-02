@@ -27,7 +27,7 @@ public class ChatCompletionRequest {
     /**
      * 模型
      */
-    private Model model = Model.GLM_3_5_TURBO;
+    private Model model = Model.GLM_4_FLASH;
     /**
      * 请求参数 {"role": "user", "content": "你好"}
      * 24年1月发布的 GLM_3_5_TURBO、GLM_4 模型时新增
@@ -96,6 +96,56 @@ public class ChatCompletionRequest {
      */
     private String sseFormat = "data";
 
+    @Override
+    public String toString() {
+        try {
+            // 24年1月发布新模型后调整
+            if (Model.GLM_3_5_TURBO.equals(this.model) ||
+                    Model.GLM_4_PLUS.equals(this.model) ||
+                    Model.GLM_4V.equals(this.model) ||
+                    Model.GLM_4_AIR.equals(this.model) ||
+                    Model.GLM_4_FLASH.equals(this.model)
+            ) {
+                Map<String, Object> paramsMap = new HashMap<>();
+                paramsMap.put("model", this.model.getCode());
+                if (null == this.messages && null == this.prompt) {
+                    throw new RuntimeException("One of messages or prompt must not be empty！");
+                }
+                paramsMap.put("messages", this.messages != null ? this.messages : this.prompt);
+                if (null != this.requestId) {
+                    paramsMap.put("request_id", this.requestId);
+                }
+                if (null != this.doSample) {
+                    paramsMap.put("do_sample", this.doSample);
+                }
+                paramsMap.put("stream", this.stream);
+                paramsMap.put("temperature", this.temperature);
+                paramsMap.put("top_p", this.topP);
+                paramsMap.put("max_tokens", this.maxTokens);
+                if (null != this.stop && !this.stop.isEmpty()) {
+                    paramsMap.put("stop", this.stop);
+                }
+                if (null != this.tools && !this.tools.isEmpty()) {
+                    paramsMap.put("tools", this.tools);
+                    paramsMap.put("tool_choice", this.toolChoice);
+                }
+                return new ObjectMapper().writeValueAsString(paramsMap);
+            }
+
+            // 默认
+            Map<String, Object> paramsMap = new HashMap<>();
+            paramsMap.put("request_id", requestId);
+            paramsMap.put("prompt", prompt);
+            paramsMap.put("incremental", incremental);
+            paramsMap.put("temperature", temperature);
+            paramsMap.put("top_p", topP);
+            paramsMap.put("sseFormat", sseFormat);
+            return new ObjectMapper().writeValueAsString(paramsMap);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -150,7 +200,7 @@ public class ChatCompletionRequest {
 
             @Getter
             @AllArgsConstructor
-            public static enum Type {
+            public enum Type {
                 text("text", "文本"),
                 image_url("image_url", "图"),
                 ;
@@ -186,7 +236,7 @@ public class ChatCompletionRequest {
 
         @Getter
         @AllArgsConstructor
-        public static enum Type {
+        public enum Type {
             function("function", "函数功能"),
             retrieval("retrieval", "知识库"),
             web_search("web_search", "联网"),
@@ -241,51 +291,6 @@ public class ChatCompletionRequest {
         }
 
 
-    }
-
-    @Override
-    public String toString() {
-        try {
-            // 24年1月发布新模型后调整
-            if (Model.GLM_3_5_TURBO.equals(this.model) || Model.GLM_4.equals(this.model) || Model.GLM_4V.equals(this.model)) {
-                Map<String, Object> paramsMap = new HashMap<>();
-                paramsMap.put("model", this.model.getCode());
-                if (null == this.messages && null == this.prompt) {
-                    throw new RuntimeException("One of messages or prompt must not be empty！");
-                }
-                paramsMap.put("messages", this.messages != null ? this.messages : this.prompt);
-                if (null != this.requestId) {
-                    paramsMap.put("request_id", this.requestId);
-                }
-                if (null != this.doSample) {
-                    paramsMap.put("do_sample", this.doSample);
-                }
-                paramsMap.put("stream", this.stream);
-                paramsMap.put("temperature", this.temperature);
-                paramsMap.put("top_p", this.topP);
-                paramsMap.put("max_tokens", this.maxTokens);
-                if (null != this.stop && this.stop.size() > 0) {
-                    paramsMap.put("stop", this.stop);
-                }
-                if (null != this.tools && this.tools.size() > 0) {
-                    paramsMap.put("tools", this.tools);
-                    paramsMap.put("tool_choice", this.toolChoice);
-                }
-                return new ObjectMapper().writeValueAsString(paramsMap);
-            }
-
-            // 默认
-            Map<String, Object> paramsMap = new HashMap<>();
-            paramsMap.put("request_id", requestId);
-            paramsMap.put("prompt", prompt);
-            paramsMap.put("incremental", incremental);
-            paramsMap.put("temperature", temperature);
-            paramsMap.put("top_p", topP);
-            paramsMap.put("sseFormat", sseFormat);
-            return new ObjectMapper().writeValueAsString(paramsMap);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

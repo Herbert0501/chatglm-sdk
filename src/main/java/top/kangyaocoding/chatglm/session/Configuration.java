@@ -21,42 +21,27 @@ import java.util.HashMap;
 @AllArgsConstructor
 public class Configuration {
 
+    public static final String SSE_CONTENT_TYPE = "text/event-stream";
+    public static final String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)";
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String JSON_CONTENT_TYPE = APPLICATION_JSON + "; charset=utf-8";
     // 智普Ai 请求地址
     @Getter
     @Setter
     private String apiHost = "https://open.bigmodel.cn/";
-
     // 智普Ai https://open.bigmodel.cn/usercenter/apikeys - apiSecretKey = {apiKey}.{apiSecret}
     private String apiSecretKey;
-
-    public void setApiSecretKey(String apiSecretKey) {
-        this.apiSecretKey = apiSecretKey;
-        String[] arrStr = apiSecretKey.split("\\.");
-        if (arrStr.length != 2) {
-            throw new RuntimeException("invalid apiSecretKey");
-        }
-        this.apiKey = arrStr[0];
-        this.apiSecret = arrStr[1];
-    }
-
     @Getter
     private String apiKey;
     @Getter
     private String apiSecret;
-
     // Api 服务
     @Setter
     @Getter
     private IOpenAIApi openAIApi;
-
     @Getter
     @Setter
     private OkHttpClient okHttpClient;
-
-    public EventSource.Factory createRequestFactory() {
-        return EventSources.createFactory(okHttpClient);
-    }
-
     // OkHttp 配置信息
     @Setter
     @Getter
@@ -70,21 +55,31 @@ public class Configuration {
     @Setter
     @Getter
     private long readTimeout = 450;
-
     private HashMap<Model, Executor> executorGroup;
 
-    public static final String SSE_CONTENT_TYPE = "text/event-stream";
-    public static final String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)";
-    public static final String APPLICATION_JSON = "application/json";
-    public static final String JSON_CONTENT_TYPE = APPLICATION_JSON + "; charset=utf-8";
+    public void setApiSecretKey(String apiSecretKey) {
+        this.apiSecretKey = apiSecretKey;
+        String[] arrStr = apiSecretKey.split("\\.");
+        if (arrStr.length != 2) {
+            throw new RuntimeException("invalid apiSecretKey");
+        }
+        this.apiKey = arrStr[0];
+        this.apiSecret = arrStr[1];
+    }
+
+    public EventSource.Factory createRequestFactory() {
+        return EventSources.createFactory(okHttpClient);
+    }
 
     public HashMap<Model, Executor> newExecutorGroup() {
         this.executorGroup = new HashMap<>();
         // 新版模型，配置
         Executor glmExecutor = new GLMExecutor(this);
         this.executorGroup.put(Model.GLM_3_5_TURBO, glmExecutor);
-        this.executorGroup.put(Model.GLM_4, glmExecutor);
+        this.executorGroup.put(Model.GLM_4_FLASH, glmExecutor);
+        this.executorGroup.put(Model.GLM_4_PLUS, glmExecutor);
         this.executorGroup.put(Model.GLM_4V, glmExecutor);
+        this.executorGroup.put(Model.GLM_4_AIR, glmExecutor);
         this.executorGroup.put(Model.COGVIEW_3, glmExecutor);
         return this.executorGroup;
     }
